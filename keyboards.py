@@ -15,10 +15,28 @@ def main_menu() -> ReplyKeyboardMarkup:
         [
             ["📅 Забронировать стол"],
             ["🎾 Начать игру"],
+            ["🔍 Поиск соперника"],
             ["📋 Расписание на сегодня"],
         ],
         resize_keyboard=True,
     )
+
+
+def opponent_challenge_keyboard(searcher_id: int) -> InlineKeyboardMarkup:
+    """Кнопки «Принять вызов» / «Отказаться» для уведомления о поиске соперника."""
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("✅ Принять вызов", callback_data=f"accept_challenge:{searcher_id}"),
+            InlineKeyboardButton("❌ Отказаться", callback_data=f"decline_challenge:{searcher_id}"),
+        ]
+    ])
+
+
+def cancel_search_keyboard() -> InlineKeyboardMarkup:
+    """Кнопка «Отменить поиск» для инициатора поиска."""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("❌ Отменить поиск", callback_data="cancel_opponent_search")]
+    ])
 
 
 def slots_keyboard(booked_slots_utc: list[str]) -> InlineKeyboardMarkup | None:

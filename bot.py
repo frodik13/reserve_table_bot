@@ -14,6 +14,7 @@ import config
 import database
 from handlers.booking import build_booking_handler
 from handlers.game import end_game_callback, game_start
+from handlers.opponent import accept_challenge, cancel_search, decline_challenge, search_opponent
 from handlers.schedule import schedule
 from handlers.start import start
 
@@ -54,6 +55,12 @@ def main() -> None:
 
     # Кнопка "Закончить игру" — обычный CallbackQueryHandler вне ConversationHandler
     app.add_handler(CallbackQueryHandler(end_game_callback, pattern=r"^end_game:"))
+
+    # Поиск соперника
+    app.add_handler(MessageHandler(filters.Regex(r"^🔍 Поиск соперника$"), search_opponent))
+    app.add_handler(CallbackQueryHandler(accept_challenge, pattern=r"^accept_challenge:"))
+    app.add_handler(CallbackQueryHandler(decline_challenge, pattern=r"^decline_challenge:"))
+    app.add_handler(CallbackQueryHandler(cancel_search, pattern=r"^cancel_opponent_search$"))
 
     logger.info("Bot started.")
     app.run_polling(drop_pending_updates=True)
