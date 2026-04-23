@@ -110,7 +110,7 @@ async def get_bookings_for_date(date_prefix: str) -> list[dict]:
         db.row_factory = aiosqlite.Row
         async with db.execute(
             """
-            SELECT id, player_name, slot_start, slot_end
+            SELECT id, user_id, player_name, slot_start, slot_end
             FROM bookings
             WHERE cancelled = 0 AND slot_start LIKE ?
             ORDER BY slot_start
@@ -119,6 +119,62 @@ async def get_bookings_for_date(date_prefix: str) -> list[dict]:
         ) as cur:
             rows = await cur.fetchall()
     return [dict(r) for r in rows]
+
+
+async def count_user_bookings_for_date(user_id: int, date_prefix: str) -> int:
+    """Сколько активных броней у пользователя на указанную дату."""
+    async with aiosqlite.connect(DB) as db:
+        async with db.execute(
+            """
+            SELECT COUNT(*) FROM bookings
+            WHERE cancelled = 0 AND user_id = ? AND slot_start LIKE ?
+            """,
+            (user_id, f"{date_prefix}%"),
+        ) as cur:
+            row = await cur.fetchone()
+    return row[0] if row else 0
+
+
+async def get_last_booking_user_id() -> int | None:
+    """user_id самой недавней активной брони (по created_at)."""
+    async with aiosqlite.connect(DB) as db:
+        async with db.execute(
+            """
+            SELECT user_id FROM bookings
+            WHERE cancelled = 0
+            ORDER BY created_at DESC, id DESC
+            LIMIT 1
+            """
+        ) as cur:
+            row = await cur.fetchone()
+    return row[0] if row else None
+
+
+async def cancel_booking_by_id(booking_id: int, user_id: int | None = None) -> dict | None:
+    """
+    Пометить бронь cancelled=1. Возвращает данные брони (для уведомления),
+    либо None если бронь не найдена / уже отменена / не принадлежит user_id.
+    Если user_id указан, отмена допускается только для собственной брони.
+    """
+    if user_id is None:
+        where = "id = ? AND cancelled = 0"
+        params: tuple = (booking_id,)
+    else:
+        where = "id = ? AND cancelled = 0 AND user_id = ?"
+        params = (booking_id, user_id)
+
+    async with aiosqlite.connect(DB) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute(
+            f"SELECT id, user_id, player_name, slot_start FROM bookings WHERE {where}",
+            params,
+        ) as cur:
+            row = await cur.fetchone()
+        if row is None:
+            return None
+        await db.execute("UPDATE bookings SET cancelled = 1 WHERE id = ?", (booking_id,))
+        await db.commit()
+    return dict(row)
 
 
 # ---------------------------------------------------------------------------

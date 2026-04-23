@@ -62,10 +62,12 @@ def slot_to_db(dt: datetime) -> str:
 
 
 def display_name(user) -> str:
-    """Отображаемое имя пользователя Telegram: @username или first_name."""
+    """Отображаемое имя пользователя Telegram: first_name → @username → id."""
+    if user.first_name:
+        return user.first_name
     if user.username:
         return f"@{user.username}"
-    return user.first_name or str(user.id)
+    return str(user.id)
 
 
 def db_to_local(s: str) -> datetime:

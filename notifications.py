@@ -41,3 +41,15 @@ async def broadcast_game_started(bot: Bot, player_name: str, starter_id: int) ->
 async def broadcast_game_ended(bot: Bot, player_name: str, ender_id: int) -> None:
     text = f"🏁 {player_name} завершил игру."
     await broadcast(bot, text, exclude_user_id=ender_id)
+
+
+async def broadcast_booking_cancelled(bot: Bot, player_name: str, slot_display: str) -> None:
+    text = f"❌ Бронь {player_name} на {slot_display} отменена администратором."
+    await broadcast(bot, text)
+
+
+async def broadcast_booking_self_cancelled(
+    bot: Bot, player_name: str, slot_display: str, user_id: int
+) -> None:
+    text = f"❌ {player_name} отменил(а) свою бронь на {slot_display}."
+    await broadcast(bot, text, exclude_user_id=user_id)

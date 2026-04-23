@@ -75,3 +75,29 @@ def end_game_keyboard(game_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("🏁 Закончить игру", callback_data=f"end_game:{game_id}")]
     ])
+
+
+def admin_schedule_keyboard(bookings: list[dict]) -> InlineKeyboardMarkup | None:
+    """Кнопки удаления для каждой брони (только для администраторов)."""
+    rows: list[list[InlineKeyboardButton]] = []
+    for b in bookings:
+        slot_local = utils.db_to_local(b["slot_start"])
+        label = f"❌ {utils.fmt_time(slot_local)} — {b['player_name']}"
+        rows.append([
+            InlineKeyboardButton(label, callback_data=f"admin_cancel:{b['id']}")
+        ])
+    return InlineKeyboardMarkup(rows) if rows else None
+
+
+def user_schedule_keyboard(bookings: list[dict], user_id: int) -> InlineKeyboardMarkup | None:
+    """Кнопки отмены только своих броней."""
+    rows: list[list[InlineKeyboardButton]] = []
+    for b in bookings:
+        if b["user_id"] != user_id:
+            continue
+        slot_local = utils.db_to_local(b["slot_start"])
+        label = f"❌ Отменить {utils.fmt_time(slot_local)}"
+        rows.append([
+            InlineKeyboardButton(label, callback_data=f"user_cancel:{b['id']}")
+        ])
+    return InlineKeyboardMarkup(rows) if rows else None

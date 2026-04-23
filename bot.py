@@ -12,7 +12,8 @@ from telegram.ext import (
 
 import config
 import database
-from handlers.booking import build_booking_handler
+from handlers.admin import admin_cancel_booking
+from handlers.booking import build_booking_handler, user_cancel_booking
 from handlers.game import end_game_callback, game_start
 from handlers.opponent import accept_challenge, cancel_search, decline_challenge, search_opponent
 from handlers.schedule import schedule
@@ -55,6 +56,12 @@ def main() -> None:
 
     # Кнопка "Закончить игру" — обычный CallbackQueryHandler вне ConversationHandler
     app.add_handler(CallbackQueryHandler(end_game_callback, pattern=r"^end_game:"))
+
+    # Админ: отмена любой брони
+    app.add_handler(CallbackQueryHandler(admin_cancel_booking, pattern=r"^admin_cancel:"))
+
+    # Пользователь: отмена своей брони
+    app.add_handler(CallbackQueryHandler(user_cancel_booking, pattern=r"^user_cancel:"))
 
     # Поиск соперника
     app.add_handler(MessageHandler(filters.Regex(r"^🔍 Поиск соперника$"), search_opponent))
