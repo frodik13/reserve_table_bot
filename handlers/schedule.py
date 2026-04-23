@@ -21,12 +21,14 @@ async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     lines = [f"📋 Расписание на {now.strftime('%d %b %Y')}:\n"]
     for b in bookings:
         slot_local = utils.db_to_local(b["slot_start"])
-        lines.append(f"• {utils.fmt_time(slot_local)} — {b['player_name']}")
+        mention = utils.mention_html(b["user_id"], b["player_name"])
+        lines.append(f"• {utils.fmt_time(slot_local)} — {mention}")
 
     active = await database.get_active_game()
     if active:
         started = utils.db_to_local(active["started_at"])
-        lines.append(f"\n🎾 Сейчас играет: {active['player_name']} (с {utils.fmt_time(started)})")
+        mention = utils.mention_html(active["user_id"], active["player_name"])
+        lines.append(f"\n🎾 Сейчас играет: {mention} (с {utils.fmt_time(started)})")
 
     user_id = update.effective_user.id
     is_admin = user_id in config.ADMIN_IDS

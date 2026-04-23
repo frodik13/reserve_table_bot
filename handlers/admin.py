@@ -54,8 +54,11 @@ async def admin_cancel_booking(update: Update, context: ContextTypes.DEFAULT_TYP
         bot=context.bot,
         player_name=player_name,
         slot_display=slot_display,
+        owner_id=booking["user_id"],
     )
 
+    mention = utils.mention_html(booking["user_id"], player_name)
     await query.edit_message_text(
-        f"{query.message.text}\n\n✅ Отменена: {player_name} на {slot_display}."
+        f"{query.message.text_html}\n\n✅ Отменена: {mention} на {slot_display}.",
+        parse_mode="HTML",
     )

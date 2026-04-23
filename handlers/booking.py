@@ -91,12 +91,12 @@ async def slot_chosen(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 
     slot_local = utils.db_to_local(slot_db)
     slot_display = utils.fmt_slot(slot_local)
-    player_name = utils.display_name(query.from_user)
+    player_mention = utils.mention_html(query.from_user.id, utils.display_name(query.from_user))
 
     await query.edit_message_text(
         f"Подтвердите бронирование:\n\n"
         f"🕐 Время: {slot_display}\n"
-        f"👤 Игрок: {player_name}",
+        f"👤 Игрок: {player_mention}",
         parse_mode=ParseMode.HTML,
         reply_markup=keyboards.confirm_booking_keyboard(slot_db),
     )
@@ -206,7 +206,8 @@ async def user_cancel_booking(update: Update, context: ContextTypes.DEFAULT_TYPE
     )
 
     await query.edit_message_text(
-        f"{query.message.text}\n\n✅ Ваша бронь на {slot_display} отменена."
+        f"{query.message.text_html}\n\n✅ Ваша бронь на {slot_display} отменена.",
+        parse_mode=ParseMode.HTML,
     )
 
 
@@ -252,4 +253,5 @@ def build_booking_handler() -> ConversationHandler:
         },
         fallbacks=[CommandHandler("cancel", cancel_command)],
         conversation_timeout=180,
+        allow_reentry=True,
     )

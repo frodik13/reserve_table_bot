@@ -1,3 +1,4 @@
+import html
 import math
 from datetime import datetime, timedelta
 
@@ -68,6 +69,11 @@ def display_name(user) -> str:
     if user.username:
         return f"@{user.username}"
     return str(user.id)
+
+
+def mention_html(user_id: int, name: str) -> str:
+    """HTML-меншн: кликабельное имя, открывающее профиль пользователя в Telegram."""
+    return f'<a href="tg://user?id={user_id}">{html.escape(name)}</a>'
 
 
 def db_to_local(s: str) -> datetime:
